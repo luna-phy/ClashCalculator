@@ -54,23 +54,19 @@ def getAccuracy(gag, gagTrack, suitLevel, stuns) -> float:
     propAcc = GAG_TRACK_ACCURACY[gagTrack][pos]
     trackExp = accBonusFromTrack(8) # TODO: add implementation
 
-    if suitLevel > len(SUIT_DEFENSE):
+    if suitLevel > len(SUIT_DEFENSE) - 1:
         tgtDefense = SUIT_DEFENSE[-1]
     else:
         tgtDefense = SUIT_DEFENSE[suitLevel]
 
     bonus = 0.20 * stuns
     
-    total = propAcc + trackExp + tgtDefense + bonus
-
-    print('%f + %f + %f + %f' % (propAcc, trackExp, tgtDefense, bonus))
-    
+    total = propAcc + trackExp + tgtDefense + bonus   
 
     if total > 0.95:
         total = 0.95
     if total < 0.0:
         total = 0.0
-    print(round(total, 3))
     return round(total, 3)
 
 # damage values, or lure rounds
@@ -86,6 +82,8 @@ GAG_TRACK_VALUE = (
 )
 
 def lowestRequired(track, damageToDeal):
+    if damageToDeal <= 0:
+        return -1
     for gag in GAG_TRACK_VALUE[track]:
         if gag >= damageToDeal:
             return gag
@@ -112,9 +110,17 @@ def isSingleTarget(track: int, level: int):
 def scoreGags(track: int, gags: tuple) -> int:
     score = 0
     for gag in gags:
+        if gag == -1:
+            continue
         pos = GAG_TRACK_VALUE[track].index(gag)
         score += GAG_TRACK_COST[track][pos]
     return score
+
+def localizeGag(track: int, gag: int) -> str:
+    if gag == -1:
+        return BattleStrings.FREE_SLOT
+    pos = GAG_TRACK_VALUE[track].index(gag)
+    return BattleStrings.GAG_NAMES[track][pos]
 
 # returns strings like Elephant Trunk, Elephant Trunk, Elephant Trunk, Foghorn
 def localizeGags(track: int, gags: tuple) -> str:

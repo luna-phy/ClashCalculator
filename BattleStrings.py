@@ -19,3 +19,16 @@ GAG_NAMES = (
     ('Cupcake', 'Fruit Pie Slice', 'Cream Pie Slice', 'Birthday Cake Slice', 'Whole Fruit Pie', 'Whole Cream Pie', 'Birthday Cake', 'Wedding Cake'),
     ('Flower Pot', 'Sandbag', 'Bowling Ball', 'Anvil', 'Big Weight', 'Safe', 'Boulder', 'Grand Piano')
 )
+
+def localizeGag(gag, track) -> str:
+    return GAG_NAMES[track][gag]
+
+POSITIONS = (
+    'Far Left',
+    'Mid Left',
+    'Mid Right',
+    'Far Right',
+    '(No Target)'
+)
+
+FREE_SLOT = 'Any Gag'
