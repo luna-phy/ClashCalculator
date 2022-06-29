@@ -2,13 +2,12 @@ import math, itertools, BattleGlobals, BattleStrings
 from BattleActors import Suit, FULL_TOON
 
 # helper functions to print out things to console
-def warn(string: str = ''):
-    return
-    print("Warning: %s" % string)
+def warn(string: str = ''):    
+    print("WARN: %s" % string)
 def info(string: str = ''):
-    print("Info: %s" % string)
+    print("INFO: %s" % string)
 def debug(string: str = ''):
-    print("Debug: %s" % string)
+    print("DEBUG: %s" % string)
 
 class Battle:
     activeSuits = []
@@ -237,7 +236,7 @@ class Battle:
         for char in zapString:
             if char not in ('x', '-'):
                 warn('Incorrectly formatted zap combo (%s). Must use "x" or "-" notation.' % zapString)
-                return
+                return funcName
             if char == 'x':
                 xCount += 1
             if char == '-':
@@ -245,7 +244,7 @@ class Battle:
 
         if xCount + oCount != 4:
             warn('Incorrectly formatted zap combo (%s). Must use a combination of exactly 4 "x" and "-" total.')
-            return
+            return funcName
         
         # next, truncate the expression if the set is only 3 cogs
         # turn xx-- into xx- if there's only 3 cogs, for instance
@@ -269,7 +268,7 @@ class Battle:
                 zapString = "-xx"
             else:
                 warn('how the fuck')
-                return
+                return funcName
 
         zapPaths = []
 

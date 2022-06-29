@@ -28,8 +28,8 @@ class Toon:
     currLaff = 15
     maxLaff = 15
 
-    tracks = [False, False, False, False, False, False, False, False]
-    prestiges = [False, False, False, False, False, False, False, False]
+    tracks = [False] * len(BattleGlobals.GAG_TRACK_VALUE)
+    prestiges = [False] * len(BattleGlobals.GAG_TRACK_VALUE)
 
     def __init__(self, currLaff, maxLaff, tracks, prestiges):
         self.currLaff, self.maxLaff, self.tracks, self.prestiges = currLaff, maxLaff, tracks, prestiges
@@ -41,4 +41,4 @@ class Toon:
         return self.prestiges[track]
 
 # debug filler for calculator, tells the calculator this toon has every possible gag, and every possible prestige
-FULL_TOON = Toon(137, 137, [True, True, True, True, True, True, True, True], [True, True, True, True, True, True, True, True])
+FULL_TOON = Toon(137, 137, [True] * len(BattleGlobals.GAG_TRACK_VALUE), [True] * len(BattleGlobals.GAG_TRACK_VALUE))
