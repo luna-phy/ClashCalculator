@@ -11,10 +11,9 @@ def debug(string: str = ''):
     print("Debug: %s" % string)
 
 class Battle:
-    verbose = False   # flag to print out debug statements
-
-    activeSuits = [Suit(90, 90, 8, False, "Mr. Hollywood"), Suit(170, 182, 12, False, "Mr. Hollywood"), Suit(132, 132, 10, False, "Mr. Hollywood"), Suit(132, 132, 10, False, "Mr. Hollywood")]
+    activeSuits = []
     activeToons = [FULL_TOON, FULL_TOON, FULL_TOON, FULL_TOON]
+    successfulCombos = []
 
     def addSuit(self, suit: Suit):
         if len(self.activeSuits) >= BattleGlobals.MAX_SUITS:
@@ -218,7 +217,7 @@ class Battle:
 
     # the fucko function, big boy logic 
     def doubleZapCombo(self, iteration: int = 0, mode: str = "xx--", cross: bool = False):
-        funcName = 'Double Zap (%s%s)' % (mode, ' Cross' if cross else '')
+        funcName = 'Double Zap (%s %s)' % (mode, 'Cross' if cross else 'Straight')
         numToons = len(self.activeToons)
         numPresZap = numPresSquirt = 0
 
@@ -429,6 +428,14 @@ class Battle:
                     squirtCombo.append(4)
                     squirtPositions.append(1 if len(squirtCombo) == 0 else 2)
 
+            # squirts with at just xx-- or --xx won't soak all cogs
+            if (0 in squirtPositions and 1 in squirtPositions) or (2 in squirtPositions and 3 in squirtPositions):
+                continue
+
+            # can't have soak targets be the same
+            if squirtPositions[0] == squirtPositions[1]:
+                continue
+
             validCombos.append((combo[::-1] + tuple(squirtCombo), squirtPositions))
 
         if not validCombos:
@@ -572,29 +579,45 @@ class Battle:
 
     def localize(self, function: tuple):
         if type(function) is str:
-            print('-----------------------\n%s | No combos exist.' % function)
-            return
+            return '%s | No combos exist.' % function, -1
 
         gags, accuracy, position, cost, trackSpread, name = function
 
-        output = '-----------------------\n%s | Success Rate: %.1f%% | Cost: %i | Gags: ' % (name, (accuracy * 100.0), cost) 
+        output = '%s | Success Rate: %.1f%% | Cost: %i | Gags: ' % (name, (accuracy * 100.0), cost) 
         for gag in range(len(gags)):
             output += '%s %s%s' % (BattleGlobals.localizeGag(trackSpread[gag], gags[gag]), BattleStrings.POSITIONS[position[gag if gag >= 0 else 4]], ', ' if gag != len(gags) - 1 else '')
 
-        print(output)
+        return output, cost
 
+    def calculate(self, sort: bool = False) -> None:
+        loc = self.localize
+        self.successfulCombos.append(loc(self.allUseSound()))
+        self.successfulCombos.append(loc(self.allUseTrack(track = BattleGlobals.SQUIRT_TRACK)))
+        self.successfulCombos.append(loc(self.allUseTrack(track = BattleGlobals.THROW_TRACK)))
+        self.successfulCombos.append(loc(self.allUseTrack(track = BattleGlobals.DROP_TRACK)))
+
+        for drop in range(1, len(self.activeToons)):
+            self.successfulCombos.append(loc(self.soundDrop(numDrops = drop)))
+            self.successfulCombos.append(loc(self.soundConsolidateDrops(numDrops = drop)))
+
+        for zap in BattleStrings.ZAP_COMBOS:
+            self.successfulCombos.append(loc(self.doubleZapCombo(mode = zap, cross = False)))
+            self.successfulCombos.append(loc(self.doubleZapCombo(mode = zap, cross = True)))
+
+        self.successfulCombos.append(loc(self.syphon()))
+        
+        if sort:
+            self.successfulCombos.sort(key = lambda combo: combo[1])
+
+        for combo in self.successfulCombos:
+            print(combo[0])
+        
 
 b = Battle()
+b.addSuit(Suit(182, 182, 12, False, ""))
+b.addSuit(Suit(182, 182, 12, False, ""))
+b.addSuit(Suit(182, 182, 12, False, ""))
+b.addSuit(Suit(182, 182, 12, False, ""))
 
-b.localize(b.allUseSound())
-b.localize(b.soundDrop(numDrops=1))
-b.localize(b.soundDrop(numDrops=2))
-b.localize(b.soundDrop(numDrops=3))
-b.localize(b.soundConsolidateDrops(numDrops=1))
-b.localize(b.soundConsolidateDrops(numDrops=2))
-b.localize(b.soundConsolidateDrops(numDrops=3))
-b.localize(b.doubleZapCombo(mode = "-xx-", cross = True))
-b.localize(b.syphon())
-b.localize(b.allUseTrack(track = BattleGlobals.DROP_TRACK))
-b.localize(b.allUseTrack(track = BattleGlobals.SQUIRT_TRACK))
-b.localize(b.allUseTrack(track = BattleGlobals.THROW_TRACK))
+b.calculate(sort = True)
+#print(b.localize(b.doubleZapCombo(mode = 'x-x-', cross = False)))

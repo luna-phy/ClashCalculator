@@ -92,15 +92,17 @@ def lowestRequired(track, damageToDeal):
 # the cost of using a specific gag, for each track - used in calculations to determine what plan is more cost-effective
 # the reason for this is because gags of different tracks of the same level are weighted differently
 # a piano is a tad more costly to use than an opera, for instance
+BASE_GAG_COST = (1, 2, 3, 5, 8, 30, 80, 150)
+
 GAG_TRACK_COST = (
-    (1, 2, 3, 5, 8, 30, 80, 150),
-    (1, 2, 3, 5, 8, 30, 80, 150),
-    (1, 2, 3, 5, 8, 30, 80, 150),
-    (1, 2, 3, 5, 8, 30, 80, 150),
-    (1, 2, 3, 5, 8, 30, 80, 150),
-    (1, 2, 3, 5, 8, 30, 80, 150),
-    (1, 2, 3, 5, 8, 30, 80, 150),
-    (2, 3, 4, 6, 9, 33, 88, 175)
+    tuple([val * 1 for val in BASE_GAG_COST]),
+    tuple([val * 4 for val in BASE_GAG_COST]),
+    tuple([val * 4 for val in BASE_GAG_COST]),
+    tuple([val * 10 for val in BASE_GAG_COST]),
+    tuple([val * 4 for val in BASE_GAG_COST]),
+    tuple([val * 15 for val in BASE_GAG_COST]),
+    tuple([val * 4 for val in BASE_GAG_COST]),
+    tuple([val * 5 for val in BASE_GAG_COST])
 )
 
 # return true if a gag is single target, false otherwise

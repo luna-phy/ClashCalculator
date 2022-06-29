@@ -32,3 +32,12 @@ POSITIONS = (
 )
 
 FREE_SLOT = 'Any Gag'
+
+ZAP_COMBOS = (
+    'xx--',
+    'x-x-',
+    '-xx-',
+    '-x-x',
+    '--xx',
+    'x--x'
+)
