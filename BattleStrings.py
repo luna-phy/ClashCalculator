@@ -31,6 +31,30 @@ POSITIONS = (
     '(No Target)'
 )
 
+POSITIONS_THREE = (
+    'Left',
+    'Middle',
+    'Right',
+    '',
+    '(No Target)'
+)
+
+POSITIONS_TWO = (
+    'Left',
+    'Right',
+    'Left',
+    'Right',
+    '(No Target)'
+)
+
+POSITIONS_ONE = (
+    'Middle',
+    'Middle',
+    'Middle',
+    'Middle',
+    '(No Target)'
+)
+
 FREE_SLOT = 'Any Gag'
 
 ZAP_COMBOS = (

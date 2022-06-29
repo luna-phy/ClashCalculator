@@ -63,7 +63,7 @@ class Battle:
         funcName = 'Sound with %i Drop%s' % (numDrops, 's' if numDrops > 1 else '')
         numToons = len(self.activeToons)
 
-        if numDrops >= numToons:
+        if numDrops >= numToons or numDrops > len(self.activeSuits):
             warn('Tried sound/drop combo without being able to sound? (Too many drops, needs at least one sound.)')
             return funcName
 
@@ -455,6 +455,10 @@ class Battle:
 
         accuracy = 1.0
         for squirt in range(2):
+            if len(self.activeSuits) < 4:
+                validCombos[iteration][1][squirt] -= 1
+            if len(self.activeSuits) == 1:
+                validCombos[iteration][1][squirt] = 0
             accuracy *= BattleGlobals.getAccuracy(validCombos[iteration][0][squirt + 2], BattleGlobals.SQUIRT_TRACK, self.activeSuits[validCombos[iteration][1][squirt]].level, 0)
 
         return validCombos[iteration][0], accuracy, positions, BattleGlobals.scoreGags(BattleGlobals.ZAP_TRACK, validCombos[iteration][0][:2]) + BattleGlobals.scoreGags(BattleGlobals.SQUIRT_TRACK, validCombos[iteration][0][2:]), [BattleGlobals.ZAP_TRACK] * 2 + [BattleGlobals.SQUIRT_TRACK] * 2, funcName
@@ -560,21 +564,53 @@ class Battle:
         funcName = 'All %s' % BattleStrings.GAG_TRACK_NAMES[track]
         numToons = len(self.activeToons)
 
-        if numToons != len(self.activeSuits):
+        if numToons == len(self.activeSuits):
+            gags = []
+            accuracy = 1.0
+            for suit in range(len(self.activeSuits)):
+                if BattleGlobals.lowestRequired(track, self.activeSuits[suit].currHP) != -1:
+                    gags.append(BattleGlobals.lowestRequired(track, self.activeSuits[suit].currHP))
+                    accuracy *= BattleGlobals.getAccuracy(BattleGlobals.lowestRequired(track, self.activeSuits[suit].currHP), track, self.activeSuits[suit].level, 0) + (BattleGlobals.DROP_PRESTIGE_BONUS_SOLO_ACC if (track == BattleGlobals.DROP_TRACK and self.activeToons[suit].hasPrestige(BattleGlobals.DROP_TRACK)) else 0)
+                else:
+                    return funcName
+            
+            accuracy = round(accuracy, 3)
+
+            return gags, accuracy, [target for target in range(numToons)], BattleGlobals.scoreGags(track, gags), [track] * numToons, funcName
+        elif len(self.activeSuits) == 1:
+            combos = list(itertools.combinations_with_replacement(BattleGlobals.GAG_TRACK_VALUE[track], numToons))
+            combos.sort(key = lambda damages: sum(damages), reverse = True) 
+
+            validCombos = []
+            for combo in combos:
+                damage = sum(combo)
+                if track == BattleGlobals.DROP_TRACK:
+                    numPres = 0
+                    for toon in self.activeToons:
+                        if toon.hasPrestige(track):
+                            numPres += 1
+                    damage *= 1.0 + BattleGlobals.DROP_COMBO_DAMAGE_SPREAD[len(combo) - 1] + BattleGlobals.DROP_PRESTIGE_BONUS_COMBO * numPres
+                else:
+                    damage *= 1.0 + BattleGlobals.GAG_COMBO_DAMAGE_SPREAD[len(combo) - 1]
+                damage = math.ceil(damage)
+
+                if damage < self.activeSuits[0].currHP:
+                    break
+
+                validCombos.append(combo)
+
+            if not validCombos:
+                return funcName
+
+            validCombos.sort(key = lambda combo: BattleGlobals.scoreGags(track, combo))
+            return validCombos[iteration], BattleGlobals.getAccuracy(validCombos[iteration][-1], track, self.activeSuits[0].level - 1, 0), [0 for toon in range(numToons)], BattleGlobals.scoreGags(track, validCombos[iteration]), [track] * numToons, funcName
+        elif len(self.activeSuits) == 2:
+            # TODO: add implementation for splitting gags in half
+            return funcName
+        else:
             return funcName
 
-        gags = []
-        accuracy = 1.0
-        for suit in range(len(self.activeSuits)):
-            if BattleGlobals.lowestRequired(track, self.activeSuits[suit].currHP) != -1:
-                gags.append(BattleGlobals.lowestRequired(track, self.activeSuits[suit].currHP))
-                accuracy *= BattleGlobals.getAccuracy(BattleGlobals.lowestRequired(track, self.activeSuits[suit].currHP), track, self.activeSuits[suit].level, 0) + (BattleGlobals.DROP_PRESTIGE_BONUS_SOLO_ACC if (track == BattleGlobals.DROP_TRACK and self.activeToons[suit].hasPrestige(BattleGlobals.DROP_TRACK)) else 0)
-            else:
-                return funcName
-        
-        accuracy = round(accuracy, 3)
 
-        return gags, accuracy, [target for target in range(numToons)], BattleGlobals.scoreGags(track, gags), [track] * numToons, funcName
 
     def localize(self, function: tuple):
         if type(function) is str:
@@ -582,9 +618,19 @@ class Battle:
 
         gags, accuracy, position, cost, trackSpread, name = function
 
+        pos = None
+        if len(self.activeSuits) == 4:
+            pos = BattleStrings.POSITIONS
+        elif len(self.activeSuits) == 3:
+            pos = BattleStrings.POSITIONS_THREE
+        elif len(self.activeSuits) == 2:
+            pos = BattleStrings.POSITIONS_TWO
+        elif len(self.activeSuits) == 1:
+            pos = BattleStrings.POSITIONS_ONE
+
         output = '%s | Success Rate: %.1f%% | Cost: %i | Gags: ' % (name, (accuracy * 100.0), cost) 
         for gag in range(len(gags)):
-            output += '%s %s%s' % (BattleGlobals.localizeGag(trackSpread[gag], gags[gag]), BattleStrings.POSITIONS[position[gag if gag >= 0 else 4]], ', ' if gag != len(gags) - 1 else '')
+            output += '%s %s%s' % (BattleGlobals.localizeGag(trackSpread[gag], gags[gag]), pos[position[gag if gag >= 0 else 4]], ', ' if gag != len(gags) - 1 else '')
 
         return output, cost
 
@@ -610,13 +656,4 @@ class Battle:
 
         for combo in self.successfulCombos:
             print(combo[0])
-        
-
-b = Battle()
-b.addSuit(Suit(182, 182, 12, False, ""))
-b.addSuit(Suit(182, 182, 12, False, ""))
-b.addSuit(Suit(182, 182, 12, False, ""))
-b.addSuit(Suit(182, 182, 12, False, ""))
-
-b.calculate(sort = True)
-#print(b.localize(b.doubleZapCombo(mode = 'x-x-', cross = False)))
+            
