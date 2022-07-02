@@ -3,8 +3,10 @@ from BattleActors import Suit, FULL_TOON
 
 # helper functions to print out things to console
 def warn(string: str = ''):    
+    return
     print("WARN: %s" % string)
 def info(string: str = ''):
+    return
     print("INFO: %s" % string)
 def debug(string: str = ''):
     print("DEBUG: %s" % string)
@@ -21,6 +23,9 @@ class Battle:
 
         self.activeSuits.append(suit)
         info('Successfully added new suit to list.')
+
+    def clearSuits(self):
+        self.activeSuits.clear()
 
     def allUseSound(self, iteration: int = 0):
         funcName = 'All Sound'
@@ -481,24 +486,24 @@ class Battle:
             ((-1, 1, 0, 2), 2), # -xXx            
         )
 
+        zapFuncNames = (
+            'Xxx-', 'xxX-', '-Xxx', '-xxX', 'xXx-', '-xXx'
+        )
+
         maxLevel = max(self.activeSuits, key = lambda suit: suit.level).level
         presBonus = math.ceil(maxLevel * BattleGlobals.SOUND_PRESTIGE_BONUS_FROM_LV)
 
         sounds = BattleGlobals.GAG_TRACK_VALUE[BattleGlobals.SOUND_TRACK]
         zaps = BattleGlobals.GAG_TRACK_VALUE[BattleGlobals.ZAP_TRACK]
         squirts = BattleGlobals.GAG_TRACK_VALUE[BattleGlobals.SQUIRT_TRACK]
-        drops = BattleGlobals.GAG_TRACK_VALUE[BattleGlobals.DROP_TRACK]
 
         workableSyphons = []
         for plan in zapPlans:
             mult = []
-            zapTarget = -1
             for node in plan[0]:
                 if node == -1:
                     mult.append(0)
                 else:
-                    if node == 0:
-                        zapTarget = node
                     if any(toon.hasPrestige(BattleGlobals.ZAP_TRACK) for toon in self.activeToons):
                         mult.append(BattleGlobals.ZAP_PRESTIGE_BOUNCE[node])
                     else:
@@ -545,7 +550,7 @@ class Battle:
                                         # no drop exists powerful enough to kill final cog
                                         continue
                         
-                        workableSyphons.append(((sound, zap, squirt, dropDamage), (-1, zapTarget, plan[1], dropTarget)))
+                        workableSyphons.append(((sound, zap, squirt, dropDamage), (-1, plan[0].index(0), plan[1], dropTarget), zapFuncNames[zapPlans.index(plan)]))
 
         workableSyphons.sort(key = lambda vals: BattleGlobals.scoreGags(BattleGlobals.SOUND_TRACK, (vals[0][0],)) + BattleGlobals.scoreGags(BattleGlobals.ZAP_TRACK, (vals[0][1],)) + BattleGlobals.scoreGags(BattleGlobals.SQUIRT_TRACK, (vals[0][2],)) + BattleGlobals.scoreGags(BattleGlobals.DROP_TRACK, (vals[0][3],)))
 
@@ -557,7 +562,7 @@ class Battle:
 
         accuracy = round(accuracy, 3)
 
-        return workableSyphons[iteration][0], accuracy, workableSyphons[iteration][1], BattleGlobals.scoreGags(BattleGlobals.SOUND_TRACK, (workableSyphons[iteration][0][0],)) + BattleGlobals.scoreGags(BattleGlobals.ZAP_TRACK, (workableSyphons[iteration][0][1],)) + BattleGlobals.scoreGags(BattleGlobals.SQUIRT_TRACK, (workableSyphons[iteration][0][2],)) + BattleGlobals.scoreGags(BattleGlobals.DROP_TRACK, (workableSyphons[iteration][0][3],)), [BattleGlobals.SOUND_TRACK, BattleGlobals.ZAP_TRACK, BattleGlobals.SQUIRT_TRACK] + [BattleGlobals.DROP_TRACK] * (1 if numToons > 3 else 0), funcName
+        return workableSyphons[iteration][0], accuracy, workableSyphons[iteration][1], BattleGlobals.scoreGags(BattleGlobals.SOUND_TRACK, (workableSyphons[iteration][0][0],)) + BattleGlobals.scoreGags(BattleGlobals.ZAP_TRACK, (workableSyphons[iteration][0][1],)) + BattleGlobals.scoreGags(BattleGlobals.SQUIRT_TRACK, (workableSyphons[iteration][0][2],)) + BattleGlobals.scoreGags(BattleGlobals.DROP_TRACK, (workableSyphons[iteration][0][3],)), [BattleGlobals.SOUND_TRACK, BattleGlobals.ZAP_TRACK, BattleGlobals.SQUIRT_TRACK] + [BattleGlobals.DROP_TRACK] * (1 if numToons > 3 else 0), funcName + ' ' + workableSyphons[iteration][2]
 
     # just fucking use one of each gag on one each of the suits
     def allUseTrack(self, iteration: int = 0, track: int = BattleGlobals.DROP_TRACK):
@@ -634,8 +639,40 @@ class Battle:
 
         return output, cost
 
-    def calculate(self, sort: bool = False) -> None:
-        loc = self.localize
+    def localizeSubStr(self, function: tuple):
+        if type(function) is str:
+            return function, -1
+
+        gags, accuracy, position, cost, trackSpread, name = function
+
+        pos = None
+        if len(self.activeSuits) == 4:
+            pos = BattleStrings.POSITIONS
+        elif len(self.activeSuits) == 3:
+            pos = BattleStrings.POSITIONS_THREE
+        elif len(self.activeSuits) == 2:
+            pos = BattleStrings.POSITIONS_TWO
+        elif len(self.activeSuits) == 1:
+            pos = BattleStrings.POSITIONS_ONE
+
+        output = ''
+        for gag in range(len(gags)):
+            output += '%s %s%s' % (BattleGlobals.localizeGag(trackSpread[gag], gags[gag]), pos[position[gag if gag >= 0 else 4]], ', ' if gag != len(gags) - 1 else '')
+
+        return name, accuracy, cost, gags, trackSpread, output
+
+    def calculate(self, sort: bool = False, mode: bool = False) -> list:
+        if not self.activeSuits:
+            warn('No suits?')
+            return []
+        if not self.activeToons:
+            warn('No toons?')
+            return []
+        
+        if mode:
+            loc = self.localizeSubStr
+        else:
+            loc = self.localize
         self.successfulCombos.append(loc(self.allUseSound()))
         self.successfulCombos.append(loc(self.allUseTrack(track = BattleGlobals.SQUIRT_TRACK)))
         self.successfulCombos.append(loc(self.allUseTrack(track = BattleGlobals.THROW_TRACK)))
@@ -655,5 +692,10 @@ class Battle:
             self.successfulCombos.sort(key = lambda combo: combo[1])
 
         for combo in self.successfulCombos:
-            print(combo[0])
+            if not mode:
+                print(combo[0])
+
+        toReturn = self.successfulCombos.copy()
+        self.successfulCombos.clear()   # fuck you
+        return toReturn
             
