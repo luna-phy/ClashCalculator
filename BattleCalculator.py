@@ -15,6 +15,7 @@ class Battle:
     activeSuits = []
     activeToons = [FULL_TOON, FULL_TOON, FULL_TOON, FULL_TOON]
     successfulCombos = []
+    MAX_COMBO_OUTPUT = 23   # the max amount of successful combos returned by calculate()
 
     def addSuit(self, suit: Suit):
         if len(self.activeSuits) >= BattleGlobals.MAX_SUITS:

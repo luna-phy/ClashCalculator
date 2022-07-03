@@ -115,7 +115,13 @@ class GUI:
             return
 
         currentIndex = -1
-        for combo in range(len(combos)):
+        for combo in range(self.battleCalc.MAX_COMBO_OUTPUT):
+            self.comboFName[combo].config(text = '')
+            self.comboFDetail[combo].config(text = '')
+
+            for gag in range(4):
+                self.comboGagIcons[combo][gag].config(image = self.gagIcons[0][0])
+
             if len(combos[combo]) <= 2:
                 # if a failed combo
                 continue
@@ -184,7 +190,7 @@ class GUI:
         self.comboFName = []
         self.comboFDetail = []
         self.comboGagIcons = []
-        for comboDisplay in range(24):  
+        for comboDisplay in range(self.battleCalc.MAX_COMBO_OUTPUT):  
             self.comboFrame.append(LabelFrame(self.frame, bg = '#DDDDDD', width = 1125, height = 175))
             self.comboFrame[comboDisplay].grid(row = comboDisplay, column = 0)
             self.comboFrame[comboDisplay].grid_propagate(False)
