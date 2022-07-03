@@ -122,12 +122,12 @@ class GUI:
             for gag in range(4):
                 self.comboGagIcons[combo][gag].config(image = self.gagIcons[0][0])
 
-            if len(combos[combo]) <= 2:
+            if len(combos[combo]) <= 3:
                 # if a failed combo
                 continue
             else:
                 currentIndex += 1
-            self.comboFName[currentIndex].config(text = combos[combo][0])
+            self.comboFName[currentIndex].config(text = '%s - Cost: %i - Success Rate: %.1f%%' % (combos[combo][0], combos[combo][2], combos[combo][1] * 100))
             self.comboFDetail[currentIndex].config(text = combos[combo][5])
 
             for gag in range(len(combos[combo][3])):

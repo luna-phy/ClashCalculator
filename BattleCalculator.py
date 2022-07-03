@@ -642,7 +642,7 @@ class Battle:
 
     def localizeSubStr(self, function: tuple):
         if type(function) is str:
-            return function, -1
+            return function, -1, -1
 
         gags, accuracy, position, cost, trackSpread, name = function
 
@@ -690,7 +690,7 @@ class Battle:
         self.successfulCombos.append(loc(self.syphon()))
         
         if sort:
-            self.successfulCombos.sort(key = lambda combo: combo[1])
+            self.successfulCombos.sort(key = lambda combo: combo[1] if not mode else combo[2])
 
         for combo in self.successfulCombos:
             if not mode:
