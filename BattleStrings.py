@@ -65,3 +65,19 @@ ZAP_COMBOS = (
     '--xx',
     'x--x'
 )
+
+# gui strings
+GUIWindowTitle = 'shadoo robot'
+GUIMsgBoxTitleNoCombo = 'No Combos'
+GUIMsgBoxMessageNoCombo = 'No combos exist for this set.'
+GUIMsgBoxTitleOCRError = 'OCR Error'
+GUIMsgBoxMessageOCRError = 'There was an error fetching suit information through OCR.'
+GUIDisplayTitle = 'bnuuy calculator'
+GUIOCRButton = ':eye:'
+GUICalcButton = 'calculate'
+GUILevelLabel = 'Level:'
+GUIHealthLabel = 'Current HP:'
+GUIMaxHPLabel = 'Max HP:'
+GUISuitHeader = 'Suit %i'
+GUIExecutive = '.exe?'
+GUIComboFrameNameLabel = '%s - Cost: %i - Success Rate: %.1f%%'

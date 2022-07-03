@@ -3,7 +3,8 @@ from tkinter import messagebox
 from PIL import ImageTk, Image
 import BattleCalculator
 import OCRModule
-import BattleGlobals, BattleStrings
+import BattleGlobals
+from BattleStrings import *
 from BattleActors import Suit
 
 class ScrollbarFrame(Frame):
@@ -47,7 +48,7 @@ class GUI:
 
     def __init__(self):
         self.window = Tk()
-        self.window.title('shadoo robot')
+        self.window.title(GUIWindowTitle)
         self.window.geometry('1250x700')
 
         self.battleCalc = BattleCalculator.Battle()
@@ -61,10 +62,10 @@ class GUI:
         for track in range(8):
             gags = []
             for gag in range(8):
-                if BattleStrings.GAG_TRACK_NAMES[track] in ['Toon-Up', 'Trap', 'Lure']:
+                if GAG_TRACK_NAMES[track] in ['Toon-Up', 'Trap', 'Lure']:
                     img = Image.open("resources/Unknown.png")
                 else:
-                    img = Image.open("resources/%s-%i.png" % (BattleStrings.GAG_TRACK_NAMES[track], gag))
+                    img = Image.open("resources/%s-%i.png" % (GAG_TRACK_NAMES[track], gag))
                 new_img = img.resize((80, 80))
                 gags.append(ImageTk.PhotoImage(new_img))
             self.gagIcons.append(gags)
@@ -76,7 +77,7 @@ class GUI:
         suits = self.ocr.grabSuitHealths()
 
         if not suits:
-            messagebox.showerror('OCR Error', 'There was an error fetching suit information through OCR.')
+            messagebox.showerror(GUIMsgBoxTitleOCRError, GUIMsgBoxMessageOCRError)
             return
 
         self.battleCalc.clearSuits()
@@ -111,7 +112,7 @@ class GUI:
         combos = self.battleCalc.calculate(sort = True, mode = True)
 
         if not combos:
-            messagebox.showinfo('Null Combo', 'No combos exist for this set.')
+            messagebox.showinfo(GUIMsgBoxTitleNoCombo, GUIMsgBoxMessageNoCombo)
             return
 
         currentIndex = -1
@@ -127,7 +128,7 @@ class GUI:
                 continue
             else:
                 currentIndex += 1
-            self.comboFName[currentIndex].config(text = '%s - Cost: %i - Success Rate: %.1f%%' % (combos[combo][0], combos[combo][2], combos[combo][1] * 100))
+            self.comboFName[currentIndex].config(text = GUIComboFrameNameLabel % (combos[combo][0], combos[combo][2], combos[combo][1] * 100))
             self.comboFDetail[currentIndex].config(text = combos[combo][5])
 
             for gag in range(len(combos[combo][3])):
@@ -142,22 +143,22 @@ class GUI:
 
 
     def buildGui(self, gui):
-        self.title = Label(gui, text = 'bnuuy', font = GUI.HEADER_FONT)
+        self.title = Label(gui, text = GUIDisplayTitle, font = GUI.HEADER_FONT)
         self.title.grid(column = 3, row = 0)
 
-        self.genBt = Button(gui, text = ':eye:', command = self.doOCR, font = GUI.SUBHEADER_FONT)
+        self.genBt = Button(gui, text = GUIOCRButton, command = self.doOCR, font = GUI.SUBHEADER_FONT)
         self.genBt.grid(column = 3, row = 1)
 
-        self.calBt = Button(gui, text = 'calculate', command = self.calculate, font = GUI.SUBHEADER_FONT)
+        self.calBt = Button(gui, text = GUICalcButton, command = self.calculate, font = GUI.SUBHEADER_FONT)
         self.calBt.grid(column = 4, row = 1)
 
-        self.expLv = Label(gui, text = 'Level', font = GUI.MAIN_FONT)
+        self.expLv = Label(gui, text = GUILevelLabel, font = GUI.MAIN_FONT)
         self.expLv.grid(column = 0, row = 3)
 
-        self.expHP = Label(gui, text = 'HP', font = GUI.MAIN_FONT)
+        self.expHP = Label(gui, text = GUIHealthLabel, font = GUI.MAIN_FONT)
         self.expHP.grid(column = 0, row = 4)
 
-        self.expMP = Label(gui, text = 'Max HP', font = GUI.MAIN_FONT)
+        self.expMP = Label(gui, text = GUIMaxHPLabel, font = GUI.MAIN_FONT)
         self.expMP.grid(column = 0, row = 5)
 
         self.suitHeader = [Label] * BattleGlobals.MAX_SUITS
@@ -166,7 +167,7 @@ class GUI:
         self.suitMaxHlt = [Entry] * BattleGlobals.MAX_SUITS
         self.execButton = [Checkbutton] * BattleGlobals.MAX_SUITS
         for col in range(BattleGlobals.MAX_SUITS):
-            self.suitHeader[col] = Label(gui, text = 'suit %i' % (col + 1), font = GUI.SUBHEADER_FONT)
+            self.suitHeader[col] = Label(gui, text = GUISuitHeader % (col + 1), font = GUI.SUBHEADER_FONT)
             self.suitHeader[col].grid(column = col + 1, row = 2)
 
             self.suitLevels[col] = Entry(gui, font = GUI.MAIN_FONT, textvariable = self.texts[col][0], width = 4)
@@ -177,7 +178,7 @@ class GUI:
 
             self.suitMaxHlt[col] = Entry(gui, font = GUI.MAIN_FONT, textvariable = self.texts[col][2], width = 4)
             self.suitMaxHlt[col].grid(column = col + 1, row = 5)
-            self.execButton[col] = Checkbutton(gui, text = '.exe?', variable = self.execs[col])
+            self.execButton[col] = Checkbutton(gui, text = GUIExecutive, font = GUI.MAIN_FONT, variable = self.execs[col])
             self.execButton[col].grid(column = col + 1, row = 6) 
 
         
